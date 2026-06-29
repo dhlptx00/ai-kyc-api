@@ -1,0 +1,8 @@
+fastapi
+uvicorn[standard]
+python-multipart
+pillow
+opencv-python-headless
+paddleocr
+compreface-sdk
+numpy
