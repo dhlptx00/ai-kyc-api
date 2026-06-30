@@ -26,6 +26,7 @@ sudo update-ca-certificates --fresh
 
 sudo systemctl restart docker
 
+# 别挂VPN不然拉取镜像报错
 docker build -t kyc-api:latest .
 
 # 运行容器（后台运行）

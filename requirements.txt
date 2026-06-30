@@ -5,4 +5,4 @@ deepface
 paddleocr
 opencv-python-headless
 Pillow
-numpy
+numpytf-keras
