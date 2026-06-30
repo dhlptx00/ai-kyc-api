@@ -85,33 +85,6 @@ curl -X POST "http://localhost:8000/verify-kyc" \
 - 首次请求如果模型未预热可能稍慢（已预下载）
 - CPU 推理，图片处理约 1-3 秒（取决于图片大小）
 
-## 进阶（可选）
-
-### 使用 docker-compose（推荐生产）
-创建 `docker-compose.yml`：
-```yaml
-version: "3.8"
-services:
-  kyc-api:
-    build: .
-    container_name: kyc-api
-    ports:
-      - "8000:8000"
-    restart: unless-stopped
-    environment:
-      - TZ=Asia/Shanghai
-```
-
-然后：
-```bash
-docker compose up -d --build
-```
-
-### 修改模型（进阶）
-在 `main.py` 第 88 行可更换：
-- `model_name="ArcFace"` 或 `"Facenet512"` （更准但稍慢）
-- `detector_backend="retinaface"` （更精准检测小脸，但需额外下载模型）
-
 ## 常见问题
 1. **构建失败 / 内存不足**：Docker build 需要至少 4-8GB 内存，建议关闭其他程序。
 2. **人脸检测失败**：换用更清晰的照片，或把 `enforce_detection=False`（不推荐，会降低安全性）。
