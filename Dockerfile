@@ -1,6 +1,5 @@
 FROM python:3.11-slim
 
-# 消除 debconf 警告
 ENV DEBIAN_FRONTEND=noninteractive
 
 WORKDIR /app
@@ -17,16 +16,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY requirements.txt .
 RUN pip install --no-cache-dir --root-user-action=ignore -r requirements.txt
 
-# 预下载模型
+# 预下载 DeepFace 模型
 RUN printf "from deepface import DeepFace\n\
 print('>>> Downloading DeepFace Facenet model...')\n\
 DeepFace.build_model('Facenet')\n\
 print('>>> DeepFace model ready')\n" > /tmp/dl_deepface.py && \
     python /tmp/dl_deepface.py
 
+# 预下载 PaddleOCR 模型（已修复 show_log 参数）
 RUN printf "from paddleocr import PaddleOCR\n\
 print('>>> Downloading PaddleOCR Chinese model...')\n\
-ocr = PaddleOCR(use_angle_cls=True, lang='ch', show_log=False)\n\
+ocr = PaddleOCR(use_angle_cls=True, lang='ch')\n\
 print('>>> PaddleOCR model ready')\n" > /tmp/dl_paddleocr.py && \
     python /tmp/dl_paddleocr.py
 

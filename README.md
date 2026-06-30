@@ -26,8 +26,16 @@ sudo update-ca-certificates --fresh
 
 sudo systemctl restart docker
 
+# 如果拉取太慢可以试试这个
+# sudo apt update
+# sudo apt install -y docker-buildx
+# export DOCKER_BUILDKIT=1
+# docker build --progress=plain -t kyc-api:latest .
+
+# 构建方式2选一
+
 # 别挂VPN不然拉取镜像报错
-docker build -t kyc-api:latest .
+# docker build -t kyc-api:latest .
 
 # 运行容器（后台运行）
 docker run -d --name kyc-api \
