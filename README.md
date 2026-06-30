@@ -18,6 +18,14 @@ git clone https://github.com/dhlptx00/ai-kyc-api.git
 
 cd ai-kyc-api
 
+sudo apt update
+
+sudo apt install -y ca-certificates
+
+sudo update-ca-certificates --fresh
+
+sudo systemctl restart docker
+
 docker build -t kyc-api:latest .
 
 # 运行容器（后台运行）
