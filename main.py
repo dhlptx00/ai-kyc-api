@@ -1,10 +1,3 @@
-#!/usr/bin/env python3
-"""
-KYC 人脸核身 API
-使用 FastAPI + DeepFace + PaddleOCR
-上传自拍照片 + 证件照，判断是否为同一个人
-"""
-
 import os
 import shutil
 import tempfile
@@ -26,7 +19,7 @@ app = FastAPI(
 print("正在初始化 PaddleOCR 模型（首次会自动下载模型，请耐心等待）...")
 ocr = PaddleOCR(
     use_angle_cls=True,
-    lang='ch',
+    lang='en',
     use_gpu=False,          # CPU 模式，最简单部署
     show_log=False
 )

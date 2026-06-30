@@ -1,40 +1,19 @@
-# KYC 人脸核身验证 API（最简单 Docker 部署版）
-
-使用 **FastAPI + DeepFace + PaddleOCR** 实现：
-- 上传「自拍照片」 + 「证件照片」（身份证/驾照/护照等）
-- AI 自动判断是否为**同一个人**
-- 同时提取证件上的文字信息（姓名、身份证号等）
-- 通过 API 返回 JSON 结果（verified + confidence + 提取文字）
-- **Docker 一键部署**，Ubuntu 环境最简单方式
-
-## 项目结构（最简）
-```
-kyc-api/
-├── Dockerfile          # Docker 镜像定义（已预下载模型）
-├── requirements.txt    # Python 依赖
-├── main.py             # FastAPI 主程序（核心逻辑）
-└── README.md
-```
-
 ## 快速开始（Ubuntu + Docker）
 
 ### 1. 准备环境（Ubuntu）
 ```bash
-# 更新系统
 sudo apt update && sudo apt install -y docker.io docker-compose
 
-# 启动 docker
 sudo systemctl start docker
-sudo usermod -aG docker $USER   # 退出终端重新登录使生效，或用 sudo
+sudo usermod -aG docker $USER   # 退出终端重新登录使生效
+
 ```
 
-### 2. 构建并运行（最简单方式）
+### 2. 构建并运行
 
 ```bash
-# 进入项目目录
 cd kyc-api
 
-# 构建镜像（首次会下载模型，耗时 5-15 分钟，取决于网速）
 docker build -t kyc-api:latest .
 
 # 运行容器（后台运行）
@@ -134,20 +113,7 @@ docker compose up -d --build
 - `detector_backend="retinaface"` （更精准检测小脸，但需额外下载模型）
 
 ## 常见问题
-
 1. **构建失败 / 内存不足**：Docker build 需要至少 4-8GB 内存，建议关闭其他程序。
 2. **人脸检测失败**：换用更清晰的照片，或把 `enforce_detection=False`（不推荐，会降低安全性）。
 3. **想支持 GPU**：换用 nvidia/cuda base image + paddlepaddle-gpu + deepface（较复杂，本项目为最简单 CPU 版）。
 4. **生产建议**：加 Nginx 反向代理 + HTTPS + 限流 + 日志 + 异步任务队列（Celery）处理大量请求。
-
-## 技术栈
-- **FastAPI**：高性能异步 API 框架
-- **DeepFace**：人脸识别（Facenet 模型 + cosine 距离）
-- **PaddleOCR**：中文 OCR（提取身份证姓名/号码）
-- **Docker**：一键部署，模型已预打包
-
----
-
-**最简单的方式已完成**：只需 3 个文件 + 2 条命令即可在 Ubuntu 上跑起来！
-
-有问题欢迎反馈。祝 KYC 项目顺利！🚀
