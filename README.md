@@ -52,8 +52,6 @@ Swagger：http://localhost:8000/docs
   "is_same_person": true,
   "confidence": 0.9234,
   "distance": 0.28,
-  "threshold": 0.4,
-  "model_used": "Facenet + opencv",
   "id_card_text": "姓名 张三 公民身份证号码 110101199001011234 ...",
   "message": "✅ 同一个人"
 }
@@ -63,10 +61,7 @@ Swagger：http://localhost:8000/docs
 ```json
 {
   "success": false,
-  "verified": false,
-  "is_same_person": false,
-  "error": "人脸检测失败",
-  "message": "自拍或证件照中未检测到清晰人脸，请上传正脸清晰照片..."
+  "message": "异常错误"
 }
 ```
 
