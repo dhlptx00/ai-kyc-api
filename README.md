@@ -1,4 +1,4 @@
-## 快速开始（Ubuntu + Docker）
+## 快速开始（Ubuntu + Docker）推荐配置内存12GB ，存储80
 
 ### 1. 准备环境（Ubuntu）
 ```bash
