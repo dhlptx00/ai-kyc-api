@@ -12,7 +12,11 @@ sudo usermod -aG docker $USER   # 退出终端重新登录使生效
 ### 2. 构建并运行
 
 ```bash
-cd kyc-api
+cd /usr/local/
+
+git clone https://github.com/dhlptx00/ai-kyc-api.git
+
+cd ai-kyc-api
 
 docker build -t kyc-api:latest .
 
