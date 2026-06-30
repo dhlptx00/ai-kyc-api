@@ -26,7 +26,8 @@ cd ai-kyc-api
 
 # 构建方式2选一 上面的快，推荐上面的，如果上面的不行再使用下面的原版构建
 # 每次执行前清除一下docker缓存，不然磁盘不够用 
-# docker system prune -a --volumes -f
+# 删除容器 docker rm -f kyc-api
+# 删除镜像 docker system prune -a --volumes -f
 
 # 别挂VPN不然拉取镜像报错
 # docker build -t kyc-api:latest .
