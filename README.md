@@ -32,10 +32,7 @@ cd ai-kyc-api
 # docker build -t kyc-api:latest .
 
 # 运行容器（后台运行）
-docker run -d --name kyc-api \
-  -p 8000:8000 \
-  --restart unless-stopped \
-  kyc-api:latest
+docker run -d --name kyc-api -p 8000:8000 --restart unless-stopped kyc-api:latest
 
 # 查看日志
 docker logs -f kyc-api
