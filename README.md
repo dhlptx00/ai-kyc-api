@@ -28,17 +28,8 @@ docker logs -f kyc-api
 
 ### 3. 测试 API
 
-浏览器打开：http://localhost:8000/docs  （Swagger UI 交互测试）
+Swagger：http://localhost:8000/docs
 
-或用 curl 测试：
-
-```bash
-# 准备两张测试图片（自拍 + 证件照）
-# 假设当前目录有 selfie.jpg 和 id_card.jpg
-
-curl -X POST "http://localhost:8000/verify-kyc" \
-  -F "selfie=@selfie.jpg" \
-  -F "id_card=@id_card.jpg"
 ```
 
 **返回示例（同一个人）：**
