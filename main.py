@@ -13,7 +13,7 @@ app = FastAPI(title="KYC Face Verification API")
 
 COMPFACE_URL = os.getenv("COMPFACE_URL", "http://localhost:8000")
 # 初始化 PaddleOCR（支持多语言，根据证件调整 lang='en' / 'ch' 等）
-ocr = PaddleOCR(use_angle_cls=True, lang="ch", use_gpu=False)  # GPU=True 如果有 GPU
+ocr = PaddleOCR(use_angle_cls=True, lang="en", use_gpu=False)  # GPU=True 如果有 GPU
 
 
 @app.post("/kyc/verify")
