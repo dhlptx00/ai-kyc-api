@@ -32,7 +32,7 @@ sudo systemctl restart docker
 # export DOCKER_BUILDKIT=1
 # docker build --progress=plain -t kyc-api:latest .
 
-# 构建方式2选一
+# 构建方式2选一 上面的快，推荐上面的，如果上面的不行再使用下面的原版构建
 
 # 别挂VPN不然拉取镜像报错
 # docker build -t kyc-api:latest .
