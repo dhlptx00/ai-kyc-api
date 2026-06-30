@@ -4,5 +4,5 @@ python-multipart
 pillow
 opencv-python-headless
 paddleocr
-compreface-sdk
+requests
 numpy

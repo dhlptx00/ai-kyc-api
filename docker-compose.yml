@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  compreface:
+    image: exadel/compreface:1.2.0
+    container_name: compreface
+    ports:
+      - "8000:8000"
+    volumes:
+      - compreface-data:/storage
+    environment:
+      - POSTGRES_PASSWORD=postgres
+    restart: unless-stopped
+
+  app:
+    build: .
+    container_name: kyc-fastapi
+    ports:
+      - "8001:8000"
+    depends_on:
+      - compreface
+    volumes:
+      - .:/app
+    environment:
+      - COMPFACE_URL=http://compreface:8000
+    restart: unless-stopped
+
+volumes:
+  compreface-data:
