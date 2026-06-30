@@ -1,43 +1,46 @@
-# syntax=docker/dockerfile:1
-FROM python:3.10-slim
+# KYC 人脸核身 API - Docker 镜像
+# 基于 Python slim + 系统依赖 + 预下载模型（最简单部署方式）
+FROM python:3.11-slim
 
-# Install system dependencies for OpenCV, PaddleOCR, PaddlePaddle
+# 设置工作目录
+WORKDIR /app
+
+# 安装系统依赖（OpenCV + PaddleOCR + DeepFace 必需）
+# libgl1, libglib 等用于 cv2 和 paddle
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libgl1-mesa-glx \
+    gcc \
     libglib2.0-0 \
-    libgomp1 \
     libsm6 \
     libxext6 \
     libxrender-dev \
+    libgl1-mesa-glx \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /app
-
-# Copy requirements first for better caching
+# 复制依赖文件并安装 Python 包
 COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Install Python dependencies
-# Use Tsinghua mirror for faster download in China (optional, remove if not needed)
-RUN pip install --no-cache-dir -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
-
-# Pre-download PaddleOCR models during build (saves time on first container start)
-# This will download ~1GB+ models for Chinese
-ENV OCR_LANG=ch
+# 预下载 DeepFace 和 PaddleOCR 模型（构建时下载，运行时无需网络）
+# 这样首次请求极快，且支持离线部署
 RUN python -c "
 import os
-os.environ['PADDLEOCR_LOG_LEVEL'] = 'ERROR'
+print('>>> 正在预下载 DeepFace Facenet 模型 ...')
+from deepface import DeepFace
+DeepFace.build_model('Facenet')
+print('>>> DeepFace Facenet 模型下载完成！')
+
+print('>>> 正在预下载 PaddleOCR 中文模型 ...')
 from paddleocr import PaddleOCR
-print('Downloading PaddleOCR models for lang=ch ...')
-ocr = PaddleOCR(use_angle_cls=True, lang=os.getenv('OCR_LANG', 'ch'), show_log=False, use_gpu=False)
-print('PaddleOCR models ready!')
-" 
+ocr = PaddleOCR(use_angle_cls=True, lang='ch', use_gpu=False, show_log=False)
+print('>>> PaddleOCR 模型下载完成！')
+print('>>> 所有模型准备就绪，镜像构建完成。')
+"
 
-# Copy application code
-COPY app/ ./app/
-COPY .env.example .env.example
+# 复制应用代码
+COPY main.py .
 
-# Expose port
-EXPOSE 8080
+# 暴露端口
+EXPOSE 8000
 
-# Default command
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080", "--workers", "1"]
+# 启动命令（生产可用 gunicorn + uvicorn workers，但最简单用 uvicorn）
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
