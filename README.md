@@ -1,3 +1,6 @@
+# 测试用ubuntu容器模拟ubuntu部署流程
+# docker run -d --name ubuntu-server -p 8000:8000 ubuntu tail -f /dev/null
+
 # 1，安装 Docker & Docker Compose
 # sudo apt update && sudo apt install docker.io docker-compose-v2 -y
 # sudo usermod -aG docker $USER  # 重启终端
