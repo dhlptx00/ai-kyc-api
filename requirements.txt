@@ -2,9 +2,7 @@ fastapi
 uvicorn[standard]
 python-multipart
 deepface
-paddleocr
 opencv-python-headless
 Pillow
 numpy
 tf-keras
-paddlepaddle

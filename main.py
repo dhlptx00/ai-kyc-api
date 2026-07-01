@@ -2,9 +2,11 @@ from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from deepface import DeepFace
-import os, shutil, tempfile
+import os
+import shutil
+import tempfile
 
-app = FastAPI(title="KYC 人脸核身 API")
+app = FastAPI(title="KYC 人脸核身 API（简化版）")
 
 app.add_middleware(
     CORSMiddleware,
@@ -14,77 +16,69 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-_ocr = None
-
-def get_ocr():
-    global _ocr
-    if _ocr is None:
-        from paddleocr import PaddleOCR
-        print("首次请求，正在初始化 PaddleOCR...")
-        _ocr = PaddleOCR(use_angle_cls=True, lang='ch')
-        print("PaddleOCR 初始化完成")
-    return _ocr
-
 @app.post("/verify-kyc")
-async def verify_kyc(selfie: UploadFile = File(...), id_card: UploadFile = File(...)):
+async def verify_kyc(
+    selfie: UploadFile = File(...),
+    id_card: UploadFile = File(...)
+):
     allowed = ["image/jpeg", "image/png", "image/jpg", "image/webp"]
     if selfie.content_type not in allowed or id_card.content_type not in allowed:
         raise HTTPException(status_code=400, detail="只支持 jpg/png/webp 格式")
 
     with tempfile.TemporaryDirectory() as tmp:
-        sp = os.path.join(tmp, "selfie.jpg")
-        ip = os.path.join(tmp, "id_card.jpg")
-        with open(sp, "wb") as f: shutil.copyfileobj(selfie.file, f)
-        with open(ip, "wb") as f: shutil.copyfileobj(id_card.file, f)
+        selfie_path = os.path.join(tmp, "selfie.jpg")
+        id_path = os.path.join(tmp, "id_card.jpg")
+
+        with open(selfie_path, "wb") as f:
+            shutil.copyfileobj(selfie.file, f)
+        with open(id_path, "wb") as f:
+            shutil.copyfileobj(id_card.file, f)
 
         try:
-            ocr = get_ocr()
-            id_text = ""
-            try:
-                res = ocr.ocr(ip, cls=True)
-                texts = []
-                if res:
-                    for page in res:
-                        if page:
-                            for line in page:
-                                if line and len(line) > 1 and line[1]:
-                                    texts.append(line[1][0])
-                id_text = " ".join(texts)[:300]
-            except Exception as e:
-                id_text = f"OCR失败: {str(e)}"
-
-            # 人脸比对
-            r = DeepFace.verify(
-                img1_path=sp,
-                img2_path=ip,
+            result = DeepFace.verify(
+                img1_path=selfie_path,
+                img2_path=id_path,
                 model_name="Facenet",
                 detector_backend="opencv",
                 distance_metric="cosine",
                 enforce_detection=True
             )
-            verified = bool(r.get("verified", False))
-            dist = float(r.get("distance", 1.0))
-            th = float(r.get("threshold", 0.4))
-            conf = max(0.0, min(1.0, 1.0 - (dist / max(th, 0.01))))
+
+            verified = bool(result.get("verified", False))
+            distance = float(result.get("distance", 1.0))
+            threshold = float(result.get("threshold", 0.4))
+            confidence = max(0.0, min(1.0, 1.0 - (distance / max(threshold, 0.01))))
 
             return JSONResponse({
                 "success": True,
                 "verified": verified,
                 "is_same_person": verified,
-                "confidence": round(conf, 4),
-                "distance": round(dist, 4),
-                "id_card_text": id_text,
+                "confidence": round(confidence, 4),
+                "distance": round(distance, 4),
+                "threshold": round(threshold, 4),
                 "message": "✅ 同一个人" if verified else "❌ 非同一个人"
             })
 
+        except ValueError as ve:
+            if "Face could not be detected" in str(ve):
+                return JSONResponse(status_code=400, content={
+                    "success": False,
+                    "message": "未检测到清晰人脸，请上传正脸清晰照片"
+                })
+            return JSONResponse(status_code=400, content={"success": False, "error": str(ve)})
+
         except Exception as e:
-            # 捕获所有异常，避免进程崩溃
             return JSONResponse(status_code=500, content={
                 "success": False,
-                "error": str(e),
-                "message": "处理失败，请检查图片是否清晰正脸"
+                "error": str(e)
             })
+
 
 @app.get("/")
 async def root():
-    return {"message": "KYC API 运行中", "docs": "/docs"}
+    return {"message": "KYC 人脸核身 API（简化版）已启动", "docs": "/docs"}
+
+
+@app.get("/health")
+async def health():
+    return {"status": "healthy"}
