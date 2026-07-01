@@ -20,7 +20,7 @@ def get_ocr():
     global _ocr
     if _ocr is None:
         from paddleocr import PaddleOCR
-        print("首次请求，初始化 PaddleOCR 模型中...")
+        print("首次请求，正在初始化 PaddleOCR...")
         _ocr = PaddleOCR(use_angle_cls=True, lang='ch')
         print("PaddleOCR 初始化完成")
     return _ocr
@@ -29,7 +29,7 @@ def get_ocr():
 async def verify_kyc(selfie: UploadFile = File(...), id_card: UploadFile = File(...)):
     allowed = ["image/jpeg", "image/png", "image/jpg", "image/webp"]
     if selfie.content_type not in allowed or id_card.content_type not in allowed:
-        raise HTTPException(status_code=400, detail="只支持 jpg/png/webp")
+        raise HTTPException(status_code=400, detail="只支持 jpg/png/webp 格式")
 
     with tempfile.TemporaryDirectory() as tmp:
         sp = os.path.join(tmp, "selfie.jpg")
@@ -37,23 +37,31 @@ async def verify_kyc(selfie: UploadFile = File(...), id_card: UploadFile = File(
         with open(sp, "wb") as f: shutil.copyfileobj(selfie.file, f)
         with open(ip, "wb") as f: shutil.copyfileobj(id_card.file, f)
 
-        ocr = get_ocr()
-        id_text = ""
         try:
-            res = ocr.ocr(ip, cls=True)
-            texts = []
-            if res:
-                for page in res:
-                    if page:
-                        for line in page:
-                            if line and len(line) > 1 and line[1]:
-                                texts.append(line[1][0])
-            id_text = " ".join(texts)[:300]
-        except Exception as e:
-            id_text = f"OCR失败: {str(e)}"
+            ocr = get_ocr()
+            id_text = ""
+            try:
+                res = ocr.ocr(ip, cls=True)
+                texts = []
+                if res:
+                    for page in res:
+                        if page:
+                            for line in page:
+                                if line and len(line) > 1 and line[1]:
+                                    texts.append(line[1][0])
+                id_text = " ".join(texts)[:300]
+            except Exception as e:
+                id_text = f"OCR失败: {str(e)}"
 
-        try:
-            r = DeepFace.verify(sp, ip, model_name="Facenet", detector_backend="opencv", distance_metric="cosine", enforce_detection=True)
+            # 人脸比对
+            r = DeepFace.verify(
+                img1_path=sp,
+                img2_path=ip,
+                model_name="Facenet",
+                detector_backend="opencv",
+                distance_metric="cosine",
+                enforce_detection=True
+            )
             verified = bool(r.get("verified", False))
             dist = float(r.get("distance", 1.0))
             th = float(r.get("threshold", 0.4))
@@ -68,8 +76,14 @@ async def verify_kyc(selfie: UploadFile = File(...), id_card: UploadFile = File(
                 "id_card_text": id_text,
                 "message": "✅ 同一个人" if verified else "❌ 非同一个人"
             })
+
         except Exception as e:
-            return JSONResponse(status_code=400, content={"success": False, "message": str(e)})
+            # 捕获所有异常，避免进程崩溃
+            return JSONResponse(status_code=500, content={
+                "success": False,
+                "error": str(e),
+                "message": "处理失败，请检查图片是否清晰正脸"
+            })
 
 @app.get("/")
 async def root():
