@@ -6,7 +6,7 @@ import os
 import shutil
 import tempfile
 
-app = FastAPI(title="KYC 人脸核身 API（简化版）")
+app = FastAPI(title="KYC 人脸核身 API（RetinaFace版）")
 
 app.add_middleware(
     CORSMiddleware,
@@ -39,7 +39,7 @@ async def verify_kyc(
                 img1_path=selfie_path,
                 img2_path=id_path,
                 model_name="Facenet",
-                detector_backend="opencv",
+                detector_backend="retinaface",      # ← 已改成 retinaface
                 distance_metric="cosine",
                 enforce_detection=True
             )
@@ -76,7 +76,7 @@ async def verify_kyc(
 
 @app.get("/")
 async def root():
-    return {"message": "KYC 人脸核身 API（简化版）已启动", "docs": "/docs"}
+    return {"message": "KYC 人脸核身 API（RetinaFace版）已启动", "docs": "/docs"}
 
 
 @app.get("/health")

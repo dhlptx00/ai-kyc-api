@@ -16,12 +16,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY requirements.txt .
 RUN pip install --no-cache-dir --root-user-action=ignore -r requirements.txt
 
-# 只预下载 DeepFace 模型
+# 预下载 DeepFace + RetinaFace 模型
 RUN printf "from deepface import DeepFace\n\
 print('>>> Downloading DeepFace Facenet model...')\n\
 DeepFace.build_model('Facenet')\n\
-print('>>> DeepFace model ready')\n" > /tmp/dl_deepface.py && \
-    python /tmp/dl_deepface.py
+print('>>> Downloading RetinaFace model...')\n\
+DeepFace.build_model('retinaface')\n\
+print('>>> All models ready')\n" > /tmp/dl_models.py && \
+    python /tmp/dl_models.py
 
 COPY main.py .
 
